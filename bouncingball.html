@@ -1,0 +1,188 @@
+<html>
+    <head>
+        <title>Bouncing Ball</title>
+        <script type="text/javascript" src="../colorpicker/jquery-1.5.2.min.js"></script>
+        <style type="text/css">
+          input:valid {background:green;}
+          input:invalid {background:red;}
+        </style>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                init();
+            });
+
+            var hue = [
+                [255,	0,	0 ],
+                [255, 255,	0 ],
+                [ 0, 255, 0 ],
+                [ 0,255,255],
+                [0, 0,255],
+                [255,	0, 255 ]
+            ];
+
+            //Circle Data
+                var ballx = 40,
+                    bally = 40,
+                    ballrad = 10,
+                    ballColor = "rgb(200, 0, 30)";
+
+            //Box Data
+                var lineWidth = 5,
+                    boxX = 1,
+                    boxY = 1,
+                    boxWidth = 430,
+                    boxHeight = 340;
+
+            var gameLoop,
+                ballCoords = {
+                    x: 40, //X coord of ball's center
+                    y: 40, //Y coord of balls center
+                    vx: 10, //How much ball moves on x
+                    vy: 10 //How much ball moves on y
+                },
+                boxboundx = boxWidth+boxX-ballrad, //right edge of boundary
+                boxboundy = boxHeight+boxY-ballrad, //bottom edge of boundary
+                inboxboundx = boxX+ballrad, //left edge of boundary
+                inboxboundy = boxY+ballrad; //top edge of boundary
+
+            function init(){
+                canvas = document.getElementById('boucningBall');
+                if (canvas.getContext){
+                    ctx = canvas.getContext('2d');
+                }else{
+                    return;
+                }
+
+
+
+                drawSimpleBall();
+                //drawImageBall();
+                drawBox();
+
+                gameLoop = setInterval(moveandcheck,50);
+                //clearInterval(gameLoop);
+            }
+
+            function moveandcheck(){
+                increase();
+
+                var nballx = ballCoords.x + ballCoords.vx;
+	            var nbally = ballCoords.y +ballCoords.vy;
+
+	            if (nballx > boxboundx) {
+		            ballCoords.vx =-ballCoords.vx;
+		            nballx = boxboundx;
+	            } if (nballx < inboxboundx) {
+		            nballx = inboxboundx;
+		            ballCoords.vx = -ballCoords.vx;
+	            } if (nbally > boxboundy) {
+		            nbally = boxboundy;
+		            ballCoords.vy =-ballCoords.vy;
+	            } if (nbally < inboxboundy) {
+		            nbally = inboxboundy;
+		            ballCoords.vy = -ballCoords.vy;
+	            }
+	            ballx = nballx; bally = nbally;
+
+	            ballCoords.x = nballx;
+	            ballCoords.y = nbally;
+
+	            clearCanvas();
+
+                drawSimpleBall();
+
+                //drawImageBall();
+                ctx.beginPath();
+                drawBox();
+
+            }
+
+            function change(){
+                ballCoords.vy = $("#vv").val();
+                ballCoords.vx = $("#hv").val();
+
+                return false;
+            }
+
+            function increase(){
+                $("#seconds").val(parseInt($("#seconds").val())+1);
+            }
+
+            function clearCanvas(){
+                ctx.clearRect(boxX,boxY,boxWidth,boxHeight); //Clears everything inside of these coords
+            }
+
+            function drawBox(){
+
+
+                var grad = ctx.createLinearGradient(boxX,boxY,boxX+boxWidth,boxY+boxHeight);
+
+                for (h=0;h<hue.length;h++) {
+                    color = 'rgb('+hue[h][0]+','+hue[h][1]+','+hue[h][2]+')';
+                    grad.addColorStop(h*1/hue.length,color);
+                }
+                ctx.fillStyle = grad;
+
+
+                ctx.lineWidth = lineWidth;
+
+                //ctx.strokeRect(boxX,boxY,boxWidth,boxHeight);
+
+                ctx.fillRect(boxX,boxY,ballrad,boxHeight);
+                ctx.fillRect(boxX+boxWidth-ballrad,boxY,ballrad,boxHeight);
+                ctx.fillRect(boxX,boxY,boxWidth,ballrad);
+                ctx.fillRect(boxX,boxY+boxHeight-ballrad,boxWidth,ballrad);
+            }
+
+            function drawImageBall(){
+                //Circle Data
+                var ballx = 80,
+                    bally = 80,
+                    ballw = 50,
+                    ballheight = 45;
+
+                var img = new Image();
+                img.src = "ball.jpg";
+
+                ctx.drawImage(img,ballCoords.x,ballCoords.y,ballw,ballheight);
+            }
+
+            function drawSimpleBall(){
+                ctx.fillStyle = ballColor;
+                ctx.arc(ballCoords.x, ballCoords.y, ballrad, 0, Math.PI*2, true);
+                ctx.fill();
+            }
+            
+        </script>
+
+        <style type="text/css">
+          canvas { border: 1px solid black; }
+        </style>
+
+        <script type="text/javascript">
+
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', 'UA-27130063-1']);
+          _gaq.push(['_trackPageview']);
+
+          (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+          })();
+
+        </script>
+
+    </head>
+    <body>
+        <canvas id="boucningBall" width="450" height="350">Your browser doesn't support the HTML5 element canvas.</canvas>
+        <input id="seconds" name="seocnds" value="0"/>
+        <form name="f" id="f" onSubmit="return change();">
+            Horizontal velocity <input name="hv" id="hv" value="4" type="number" min="-10" max="10" />
+            <br>
+            Vertical velocity <input name="vv" id="vv" value="8" type="number" min="-10" max="10"/>
+            <input type="submit" value="CHANGE"/>
+        </form>
+    </body>
+</html>
