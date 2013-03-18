@@ -8,8 +8,9 @@
 		#canvasWrapper { margin: 50px auto; width: 700px; }
 	</style>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-	<script type="text/javascript" src="Player.js"></script>
 	<script type="text/javascript" src="Pong.js"></script>
+	<script type="text/javascript" src="Paddle.js"></script>
+	<script type="text/javascript" src="Player.js"></script>
 </head>
 <body>
 	<div id="canvasWrapper">
@@ -22,11 +23,10 @@
 </html>
 <script type="text/javascript">
 
-
-
+	/* You can disregard most of this block below. It's basically a shim for requestAnimation frame for cross-browser
+	 	compatibility.  */
 	// requestAnimationFrame polyfill by Erik Möller
 	// fixes from Paul Irish and Tino Zijdel
-
 	(function() {
 		var lastTime = 0;
 		var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -52,204 +52,7 @@
 			};
 	}());
 
-	function Pong(){
-		this.box = {
-			x: 0,
-			y: 0,
-			width: 700,
-			height: 350
-		};
-		this.ball = {
-			x: 150,
-			y: 150,
-			vx: -4,
-			vy: 5,
-			rad: 10
-		}
-		this.bounds = {
-			right: this.box.width + this.box.x - this.ball.rad,
-			bottom: this.box.height + this.box.y - this.ball.rad,
-			left: this.box.x + this.ball.rad,
-			top: this.box.y + this.ball.rad
-		}
-		this.wins = 0;
-		this.losses = 0;
-	}
-
-	Pong.prototype.init = function() {
-		var that=this;
-
-		canvas = document.getElementById('pong');
-		if (canvas.getContext){
-			this.ctx = canvas.getContext('2d');
-		}else{
-			return;
-		}
-
-		this.entities = [];
-		this.entities.push(new Paddle(40, 80, 15, 50));
-		this.entities.push(new Player(640, 80, 15, 50, this.ctx));
-
-		//this.entities.push = new Paddle(40, 80, 15, 50);
-		//var gameLoop = setInterval(that.loop,16);
-		(function gameLoop() {
-			that.loop(that.ctx);
-			window.requestAnimationFrame(gameLoop);
-		})();
-	}
-
-	Pong.prototype.clearCanvas = function(ctx){
-		ctx.clearRect(0,0,this.box.width,this.box.height); //Clears everything inside of these coords
-	}
-
-	Pong.prototype.restart = function(){
-		this.ball.x = 325;
-		this.ball.y = 100;
-
-		$("#wins").text(this.wins);
-		$("#losses").text(this.losses);
-
-	}
-
-	Pong.prototype.loop = function(ctx){
-		this.clearCanvas(ctx);
-		this.checkGameOver();
-		this.drawBall(ctx);
-		this.moveBall(ctx);
-
-		for(x in this.entities){
-			this.entities[x].draw(ctx, this.ball);
-		}
-	}
-
-	Pong.prototype.checkGameOver = function (){
-		if(this.ball.x < 20 ){
-			this.wins++;
-			this.restart();
-			alert("You win!");
-		}else if(this.ball.x > 670){
-			this.losses++;
- 			alert("You Lose!");
-			this.restart();
-		}
-	}
-
-	Pong.prototype.drawBall = function(ctx){
-		var img = new Image();
-		img.src = "ball.jpg";
-		ctx.drawImage(img,this.ball.x,this.ball.y,this.ball.rad*2,this.ball.rad*2);
-	}
-
-	Pong.prototype.moveBall = function(ctx){
-		var nballx = this.ball.x + this.ball.vx,
-			nbally = this.ball.y + this.ball.vy,
-			that = this;
-
-		// Make sure ball doesn't leave our canvas.
-		if (nballx > this.bounds.right) {
-			nballx = this.bounds.right;
-			this.ball.vx = -this.ball.vx;
-		} if (nballx < this.bounds.left) {
-			nballx = this.bounds.left;
-			this.ball.vx = -this.ball.vx;
-		} if (nbally > this.bounds.bottom) {
-			nbally = this.bounds.bottom;
-			this.ball.vy = -this.ball.vy;
-		} if (nbally < this.bounds.top) {
-			nbally = this.bounds.top;
-			this.ball.vy = -this.ball.vy;
-		}
-
-		var padding = 0;
-		for(x in this.entities){
-			//this.entities[x].draw(ctx, this.ball);
-			var temp = that.entities[x];
-
-			if(that.ball.x < temp.pos.x + temp.pos.width + padding // Is ball left edge inside entity right edge
-					&& that.ball.x + (this.ball.rad*2) > temp.pos.x - padding // Is ball right edge Inside entity left edge
-					&& that.ball.y < temp.pos.y + temp.pos.height //Is ball top inside entity bottom
-					&& that.ball.y + (this.ball.rad*2) > temp.pos.y){ //Is ball bottom inside entity top
-				if(this.ball.vx > 0){ //If we're flying right
-					nballx = this.ball.x - 5;
-				}else{
-					nballx = this.ball.x + 5;
-				}
-				this.ball.vx = -this.ball.vx;
-			}
-		}
-
-		this.ball.x = nballx;
-		this.ball.y = nbally;
-	}
-
-
-
-	/****** PADDLE *******/
-	function Paddle(x,y, width, height){
-		this.pos = {
-			x: x,
-			y: y,
-			width: width,
-			height: height
-		}
-		this.randomOffset = 0;
-	}
-	Paddle.prototype.draw = function(ctx, ball){
-
-
-		if(ball.y < this.pos.y){
-			this.pos.y = ball.y;
-		}else if(ball.y > this.pos.y + this.pos.height){
-			this.pos.y = ball.y - this.pos.height+10 + this.randomOffset;
-		}
-
-		/*if(ball.x < 70){
-			var randomness = Math.random() * 40;
-			var plusminus = (randomness %2 > 1) ? 1 : -1;
-			var randomOffset = randomness * plusminus;
-			this.pos.y + randomOffset
-		}*/
-		if(ball.x > 135 && ball.x < 140){
-			var randomness = Math.random() * 40;
-			var plusminus = (randomness %2 > 1) ? 1 : -1;
-			this.randomOffset = randomness * plusminus;
-		}
-		ctx.fillRect(this.pos.x, this.pos.y, this.pos.width, this.pos.height);
-	}
-	/******** /PADDLE ********/
-
-	/******** PLAYER ************/
-	function Player(x,y, width, height, ctx){
-		this.pos = {
-			x: x,
-			y: y,
-			width: width,
-			height: height
-		};
-		this.ctx = ctx;
-		var that = this;
-
-		this.ctx.canvas.addEventListener("mousemove", function(e) {
-
-			var getXandY = function(e) {
-				var x =  e.clientX - that.ctx.canvas.getBoundingClientRect().left;
-				var y = e.clientY - that.ctx.canvas.getBoundingClientRect().top;
-				return {x: x, y: y};
-			}
-
-			that.pos.y = getXandY(e).y;
-		}, false);
-	}
-	Player.prototype = new Paddle();
-	Player.prototype.constructor = Player;
-	Player.prototype.draw = function(ctx, ball){
-		ctx.fillRect(this.pos.x, this.pos.y, this.pos.width, this.pos.height);
-	}
-	/*********** /PLAYER ***********/
-
-
-	var game = new Pong();
-	game.init();
-
+	var game = new Pong(); // Creates an instance of the Pong Game
+	game.init(); // Calls init method of Pong instance
 
 </script>

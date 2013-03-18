@@ -1,3 +1,4 @@
+/****** PLAYER *******/
 function Player(x,y, width, height, ctx){
 	this.pos = {
 		x: x,
@@ -20,7 +21,7 @@ function Player(x,y, width, height, ctx){
 	}, false);
 };
 
-Player.prototype = new Paddle();
+Player.prototype = new Paddle(); // Extends the Paddle Class with additional functionality
 
 Player.prototype.constructor = Player;
 

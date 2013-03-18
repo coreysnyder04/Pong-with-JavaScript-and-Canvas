@@ -1,5 +1,6 @@
+/****** PONG *******/
 function Pong(){
-	this.box = {
+	this.box = { // Coordinates of the outer container box on screen
 		x: 0,
 		y: 0,
 		width: 700,
@@ -16,7 +17,7 @@ function Pong(){
 		right: this.box.width + this.box.x - this.ball.rad,
 		bottom: this.box.height + this.box.y - this.ball.rad,
 		left: this.box.x + this.ball.rad,
-		top: this.box.y + this.ball.rad
+		top: 100
 	}
 	this.wins = 0;
 	this.losses = 0;
